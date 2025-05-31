@@ -19,8 +19,15 @@
 ---
 
 ## 📖 Chapters
->**TODO**: make sure to add links to each section up here and icons for whatever need them. Also we could maybe add sections for installation and honeycomb.
-
+1. [Introduction](README.md#1--Introduction)
+2. [Subsystems](README.md#2--Subsystems)
+3. [States](README.md#3--States)
+4. [Vision](README.md#4--vision-processing-and-localization)
+5. [Autonomous](README.md#5--autonomous)
+6. [Logging](README.md#6-logging)
+7. [Simulation](README.md#7-simulation)
+8. [Utilities](README.md#8--utilities)
+9. [Contributors](README.md#9--contributors)
 ---
 
 ### 1. 🧠 Introduction
@@ -128,12 +135,26 @@ Our `utilities` folder contains 6 files for general purposes throughout the code
 - `elasticlib.py`: this is taken directly from the [elastic github page](https://github.com/Gold872/elastic-dashboard) and allow for easy integration between code and the elastic dashboard such as automatic tab switching between autonomous and teleop and the ability to send notifications
 
 ### 9. 👥 Contributors
-- **Ethan Grieshop**: EthanGrieshop
-- **Akshaj Katkuri**: Akshaj-Katkuri
--  **Anirudh Paladugula**: PRODOFFICIAL
--  **Neil Julian**: kracken6291
--  **Jeff Brusoe**: jbfrc 
 
+##### Core Contributors:
+-  **Ethan Grieshop**: EthanGrieshop
+-  **Neil Julian**: kracken6291
+-  **Akshaj Katkuri**: Akshaj-Katkuri
+-  **Anirudh Paladugula**: PRODOFFICIAL
+
+##### Other Contributors:
+- **Bennett Singer**: BennettSinger
+- **Pranathi Irrinki**: Pranathi I
+- **Sahil Gandhi**: Sahilg93
+- **Shaun Thomas**: shaunT-08
+- **Varun Nandakumar**: Varun N
+- **Vivaan Singh**: vivaannotvivian
+- **Wafee Qazi**: WafeeQazi
+- **Zehra Demirtoka** zherapnda
+
+##### Programming Mentors:
+- **Jason Zutterling**: JasonZutterling
+- **Jeff Brusoe**: jbfrc
 ---
 
 ### 🧡 Thank You To Our Sponsors!
