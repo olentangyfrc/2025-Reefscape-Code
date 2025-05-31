@@ -20,7 +20,7 @@
 
 ## 📖 Chapters
 1. [Introduction](README.md#1--Introduction)
-2. [Subsystems](README.md#2--Subsystems)
+2. [Subsystems](README.md#2-%EF%B8%8F-subsystems)
 3. [States](README.md#3--States)
 4. [Vision](README.md#4--vision-processing-and-localization)
 5. [Autonomous](README.md#5--autonomous)
