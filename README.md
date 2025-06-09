@@ -55,14 +55,32 @@ The robot is split into 5 main mechanical subsystems:
 - End Effector
 - Algae Arm
 - Ratchet Strap Climber
-> **TODO:** Add CAD links if we decide to release.
 
 Each of these subsystems has its own file within the code, defining it as a magic component. All components are initialized in `robot.py` which updates the states of every component, centralizing all logic.
 
 ### 3. 🔄 States
 Instead of using the MagicBot's `StateMachine` class, we opted for our own custom state logic this season. All state variables are stored in a enum, those states are then incorporated into the `execute` method in each component, which runs the logic to swap between states.
 
-> **TODO**: add example component (doesn't have to be detailed)
+As an example, here is a simplified version of our servo-based funnel component:
+
+    class Funnel:
+        def __init__(self) -> None:
+            self.left_servo = wpilib.Servo(LEFT_SERVO_ID)
+            self.right_servo = wpilib.Servo(RIGHT_SERVO_ID)
+            self.left_servo.set_position(LEFT_DOWN_POS)
+            self.right_servo.set_position(RIGHT_DOWN_POS)
+            self._state = "stow"
+        
+        def execute(self) -> None:
+            if self._state == "climb":
+                self.left_servo.set_position(LEFT_UP_POS)
+                self.right_servo.set_position(RIGHT_UP_POS)
+            elif self._state == "stow":
+                self.left_servo.set_position(LEFT_DOWN_POS)
+                self.right_servo.set_position(RIGHT_DOWN_POS)
+
+        def set_state(self, target_state: str) -> None:
+            self._state = target_state
 
 We opted for state-based control for three main reasons:
 1. It allows for smooth, chronological transitions between actions
@@ -74,7 +92,6 @@ In addition to component state logic, we also implement global state machine log
 We opted against magicbot's pre-existing `StateMachine` class because it required at least two components to be implemented effectively, and it can get confusing defining extra components when we could reuse the same ones. **We would still recommend checking it out [here](https://robotpy.readthedocs.io/projects/utilities/en/latest/magicbot.html#module-magicbot.state_machine).**
 
 ### 4. 🎯 Vision Processing and localization
-> **TODO**: maybe shorten this section and add things into drop downs.
 
 For vision processing, we use two Limelight 3G cameras mounted above the front left and right swerve modules, each angled inward by approximately 20 degrees to maximize AprilTag visibility.
 
@@ -101,18 +118,22 @@ Our autonomous routine is structured similarily to the rest of the codebase usin
 
 **We select autos using a custom dasboard, not a sendable chooser**. This gives us both preset routines and allows us to create custom, on-the-fly paths by selecting reef nodes.
 
-> **TODO**: add dropdown sections for specfic autos. Also add links to honeycomb if we decide to release
-
 > **Note**: while magicbot natively supports a sendable chooser to select routines. We found it to be buggy and it's exclusive to SmartDasboard
 
 ### 6. Logging
-We log data using magicbot's built in `feedback` tags. Wrapping a getter method with this logs all data produced by it to network tables in all modes. We can then use this data and display it or analyze it with [Advantage Scope](https://docs.advantagescope.org/)
+We log data using magicbot's built in `feedback` tags. Wrapping a getter method with this logs all data produced by it to network tables in all modes. We can then use this data and display it or analyze it with [Advantage Scope](https://docs.advantagescope.org/) For exmaple:
 
-> **Todo**: maybe add a example method wrapped with tag
+    @feedback
+    def get_elevator_height() -> float:
+        return self.elevator_motor.get_position().value / ELEVATOR_GEAR_RATIO
+
+    @feedback
+    def is_at_target_position() -> bool:
+        return abs(self.get_elevator_height() - self.target_elevator_height) < TOLERANCE
 
 For displaying data we use the [elastic dashboard](https://frc-elastic.gitbook.io/docs) which provides us a clean display to use during competition. We also use remote downloading so in our `deploy` folder there is a file named `ozone-elastic-layout.json` which we deploy to our robot and can download from there.
 
-> **Todo**: add pictures of our competition elastic displays
+![Image](https://github.com/user-attachments/assets/d28725e6-38d9-447f-967f-962b2c982714)
 > **Note**: We added a ton of things to our displays this year because both of our drivers were programmers. you typically do not need to add this much info.
 
 ### 7. Simulation
@@ -121,9 +142,6 @@ For simulation purposes we do not directly simulate each motor on the robot or u
 Instead we use a more basic alternative where we store each thing we wish to simulate as a seperate variable and modify those directly when in simulation mode. Overall this approach was much quicker to implement mid-season and gives us a good-enough testing ground for ideas. 
 
 After simulating, we can view the position of our robot in either elastic or Advantage Scope using their built-in fields. Also we simulate the rest of our components, using boolean boxes to see if they reached a certain point, to better run autonomous routines and see how changes would affect certain actions like intaking or scoring.
-
-
-> **TODO**: Maybe include a picture or video of this happening, this one is very optional however. Also we need to merge sim changes into main
 
 ### 8. 🛠 Utilities
 Our `utilities` folder contains 6 files for general purposes throughout the code
@@ -158,8 +176,5 @@ Our `utilities` folder contains 6 files for general purposes throughout the code
 ---
 
 ### 🧡 Thank You To Our Sponsors!
->**TODO**: Makes sure to add pictures for **all** of our sponsors with larger ones going up top. All images should contain a link to their website.
-(Sponsor logos or links could go here!)
-
 ![output-onlinepngtools](https://github.com/user-attachments/assets/e3176bfd-30f2-422c-ac45-c0d2c74c70a8)
 
