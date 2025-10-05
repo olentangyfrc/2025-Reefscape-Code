@@ -3,8 +3,8 @@ import ntcore
 from components.led import LEDs, LEDStates
 from magicbot import feedback
 
-class Dashboard:
 
+class Dashboard:
     leds: LEDs
 
     def __init__(self):
@@ -15,10 +15,13 @@ class Dashboard:
         self.datatable = self.nt_instance.getTable("dashboard")
 
         self.current_selected_node = ""
-        self.node_receiver = self.datatable.getStringTopic(
-            "Node Selector").subscribe("Initial Value")
+        self.node_receiver = self.datatable.getStringTopic("Node Selector").subscribe(
+            "Initial Value"
+        )
 
-        self.auton_reciever = self.datatable.getStringTopic("Auton Path").subscribe("Initial Value")
+        self.auton_reciever = self.datatable.getStringTopic("Auton Path").subscribe(
+            "Initial Value"
+        )
         self.current_selected_auton = ""
 
     def execute(self) -> None:
@@ -28,7 +31,11 @@ class Dashboard:
         """
         reading = self.node_receiver.get()
 
-        if reading != self.current_selected_node and reading != "" and reading != "Initial Value":
+        if (
+            reading != self.current_selected_node
+            and reading != ""
+            and reading != "Initial Value"
+        ):
             self.leds.state = LEDStates.NODE_SWITCH
 
             self.current_selected_node = reading
@@ -50,12 +57,12 @@ class Dashboard:
             str: the current auton route in the form "A,B,C,D"
         """
         return self.auton_reciever.get()
-    
+
     @feedback
     def check_auton(self) -> bool:
         """
         Checks if an auto has been selected or not
-        
+
         Returns:
             bool: true if auton selected by dashboard does not equal default auto
         """

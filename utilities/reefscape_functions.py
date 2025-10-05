@@ -1,9 +1,6 @@
 import math
 
-import wpilib
-import wpimath.geometry as geometry
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d, Transform2d
-import utilities.ozone_utility_functions as utils
 
 import utilities.constants as constants
 
@@ -19,7 +16,7 @@ def angle_to_reef(position: Translation2d) -> Rotation2d:
         Rotation2d: The angle to the reef in field coordinates.
     """
     reef_pos = Translation2d(4.489, 4.0259)
-    diff = reef_pos-position
+    diff = reef_pos - position
 
     return Rotation2d(math.atan2(diff.Y(), diff.X()))
 
@@ -37,8 +34,8 @@ def nearest_reef_branch(position: Translation2d) -> str:
     center = Translation2d(4.489, 4.0259)
     blue_position = position
 
-    diff = blue_position-center
-    theta = (math.atan2(diff.Y(), diff.X())*180/math.pi) % 360
+    diff = blue_position - center
+    theta = (math.atan2(diff.Y(), diff.X()) * 180 / math.pi) % 360
 
     if theta > 330:
         return "g"
@@ -67,7 +64,9 @@ def nearest_reef_branch(position: Translation2d) -> str:
     return None
 
 
-def can_line_up(bot_loc: Translation2d, reef_position: str, tolerance: float = 0.43) -> bool:
+def can_line_up(
+    bot_loc: Translation2d, reef_position: str, tolerance: float = 0.43
+) -> bool:
     """
     Gets whether the bot can line up to the given reef position without hitting the reef
 
@@ -104,8 +103,11 @@ def can_line_up(bot_loc: Translation2d, reef_position: str, tolerance: float = 0
     spacial_pose = tag_pose.transformBy(Transform2d(-tolerance, 0, 0))
     slope = -math.tan(tag_pose.rotation().radians())
     # y-y1 = m(x-x1)
-    is_pose_above_tag = bot_loc.X() > slope * (bot_loc.Y() - spacial_pose.Y()) + spacial_pose.X()
+    is_pose_above_tag = (
+        bot_loc.X() > slope * (bot_loc.Y() - spacial_pose.Y()) + spacial_pose.X()
+    )
     return is_pose_above_tag == should_pose_be_above_tag
+
 
 def get_algae_loc(bot: str) -> Pose2d:
     tag_pose = Pose2d()
@@ -124,6 +126,7 @@ def get_algae_loc(bot: str) -> Pose2d:
             tag_pose = constants.AT_Coordinates.KL.value
 
     return tag_pose.transformBy(Transform2d(-0.74, 0, 0))
+
 
 def left_reef_zone(bot: Translation2d, tolerance: float = 0.45) -> bool:
     """

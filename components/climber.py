@@ -1,17 +1,12 @@
-import math
 
-from wpimath.controller import SimpleMotorFeedforwardMeters, ProfiledPIDController
-import wpimath.trajectory
 
-import wpimath.interpolation
 
-from phoenix6 import hardware, configs, controls, BaseStatusSignal, signals
-from wpilib import RobotBase, shuffleboard, DigitalInput, Timer
+from phoenix6 import hardware, configs, controls, signals
+from wpilib import DigitalInput, Timer
 
 from magicbot import feedback
 
 import utilities.constants as constants
-import utilities.ozone_utility_functions as utility_functions
 
 EXTRA_CLIMB_TIME = 0.15
 CLIMB_VOLTAGE = -9
@@ -40,8 +35,7 @@ class Climber:
     def climb(self):
         """Tells the climber to begin the climbing process"""
         self.climbing = True
-    
-    @feedback(key="Climber motor current")
+
     def get_motor_current(self) -> float:
         """
         Returns the stator currrent being applied to the climber motor
@@ -50,8 +44,7 @@ class Climber:
             float: the current in amps being applied
         """
         return self.climb_motor.get_stator_current().value
-    
-    @feedback(key="Climber pos")
+
     def get_climber_position(self) -> float:
         """
         Returns the current position of the climber motor
@@ -73,7 +66,7 @@ class Climber:
 
     def execute(self):
         """Called every periodic cycle in auton and teleop, runs all neccessary logic
-            to operate the climber"""
+        to operate the climber"""
         if not self.climbing:
             self.climb_motor.set_control(controls.VoltageOut(0))
         else:

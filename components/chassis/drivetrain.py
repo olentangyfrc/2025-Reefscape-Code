@@ -1,13 +1,12 @@
 from choreo.trajectory import SwerveSample
-from phoenix6 import hardware, configs, signals
+from phoenix6 import hardware
 import wpimath.controller
 import wpimath.estimator
-from wpimath.geometry import Pose2d, Rotation2d, Translation2d, Translation3d
+from wpimath.geometry import Pose2d, Rotation2d, Translation2d
 import wpimath.kinematics
 import wpilib
 from wpilib import Field2d, DriverStation, Timer
 from wpilib.shuffleboard import Shuffleboard
-from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig
 from choreo.trajectory import SwerveTrajectory
 import math
 from enum import Enum
@@ -57,26 +56,20 @@ class Drivetrain:
             self.x_controller = wpimath.controller.PIDController(16, 0.0, 0.5)
             self.y_controller = wpimath.controller.PIDController(16, 0.0, 0.5)
         else:
-            self.x_controller = wpimath.controller.PIDController(
-                2.8, 0.0, 0.035)
-            self.y_controller = wpimath.controller.PIDController(
-                2.8, 0.0, 0.035)
+            self.x_controller = wpimath.controller.PIDController(2.8, 0.0, 0.035)
+            self.y_controller = wpimath.controller.PIDController(2.8, 0.0, 0.035)
 
         self.fast_snap_pid = wpimath.controller.PIDController(10, 1.5, 0)
-        self.fast_snap_pid.setIZone(math.tau/360*5)
+        self.fast_snap_pid.setIZone(math.tau / 360 * 5)
         self.fast_snap_pid.enableContinuousInput(0, math.tau)
 
         wheel_base = constants.WHEEL_BASE
         track_width = constants.TRACK_WIDTH
 
-        self.front_left_location = Translation2d(
-            wheel_base/2, track_width/2)
-        self.front_right_location = Translation2d(
-            wheel_base/2, -track_width/2)
-        self.back_left_location = Translation2d(
-            -wheel_base/2, track_width/2)
-        self.back_right_location = Translation2d(
-            -wheel_base/2, -track_width/2)
+        self.front_left_location = Translation2d(wheel_base / 2, track_width / 2)
+        self.front_right_location = Translation2d(wheel_base / 2, -track_width / 2)
+        self.back_left_location = Translation2d(-wheel_base / 2, track_width / 2)
+        self.back_right_location = Translation2d(-wheel_base / 2, -track_width / 2)
 
         self.is_vision_enabled = True
 
@@ -85,7 +78,7 @@ class Drivetrain:
             turning_motor_id=constants.STEER_CAN_FL,
             turning_encoder_id=constants.TURN_ENCODER_ID_FL,
             offset=constants.FL_OFFSET,
-            name="Front Left"
+            name="Front Left",
         )
 
         self.front_right = swervemodule.SwerveModule(
@@ -93,7 +86,7 @@ class Drivetrain:
             turning_motor_id=constants.STEER_CAN_FR,
             turning_encoder_id=constants.TURN_ENCODER_ID_FR,
             offset=constants.FR_OFFSET,
-            name="Front Right"
+            name="Front Right",
         )
 
         self.back_left = swervemodule.SwerveModule(
@@ -101,7 +94,7 @@ class Drivetrain:
             turning_motor_id=constants.STEER_CAN_BL,
             turning_encoder_id=constants.TURN_ENCODER_ID_BL,
             offset=constants.BL_OFFSET,
-            name="Back Left"
+            name="Back Left",
         )
 
         self.back_right = swervemodule.SwerveModule(
@@ -109,7 +102,7 @@ class Drivetrain:
             turning_motor_id=constants.STEER_CAN_BR,
             turning_encoder_id=constants.TURN_ENCODER_ID_BR,
             offset=constants.BR_OFFSET,
-            name="Back Right"
+            name="Back Right",
         )
 
         self.gyro = hardware.Pigeon2(constants.PIGEON_CAN, "*")
@@ -121,7 +114,7 @@ class Drivetrain:
             self.front_left_location,
             self.front_right_location,
             self.back_left_location,
-            self.back_right_location
+            self.back_right_location,
         )
 
         self.zero_gyro(180)
@@ -133,14 +126,12 @@ class Drivetrain:
                 self.front_left.get_swerve_position(),
                 self.front_right.get_swerve_position(),
                 self.back_left.get_swerve_position(),
-                self.back_right.get_swerve_position()
+                self.back_right.get_swerve_position(),
             ),
-
-            Pose2d(0, 0, Rotation2d(0))
+            Pose2d(0, 0, Rotation2d(0)),
         )
 
-        self.pose_estimator.setVisionMeasurementStdDevs(
-            (0.1, 0.1, 0.1))
+        self.pose_estimator.setVisionMeasurementStdDevs((0.1, 0.1, 0.1))
 
         self.max_speed = constants.MAX_LINEAR_SPEED
 
@@ -178,7 +169,8 @@ class Drivetrain:
         self.intermediate_pose = Pose2d()
 
         Shuffleboard.getTab("Teleoperated").add(
-            "Drivetrain field", self.drivetrain_field)
+            "Drivetrain field", self.drivetrain_field
+        )
         Shuffleboard.getTab("Teleoperated").add("Filler", 0.0)
 
         self.tighten_tolerances = False
@@ -187,13 +179,13 @@ class Drivetrain:
         """
         This method is automatically called by magicbot after components and tunables are created
         """
-        self.line_up_controller = wpimath.controller.PIDController(self.line_up_p,
-                                                                   self.line_up_i,
-                                                                   self.line_up_d)
+        self.line_up_controller = wpimath.controller.PIDController(
+            self.line_up_p, self.line_up_i, self.line_up_d
+        )
 
-        self.heading_controller = wpimath.controller.PIDController(self.rotation_p,
-                                                                   self.rotation_i,
-                                                                   self.rotation_d)
+        self.heading_controller = wpimath.controller.PIDController(
+            self.rotation_p, self.rotation_i, self.rotation_d
+        )
         self.heading_controller.enableContinuousInput(0, math.tau)
         self.heading_controller.setTolerance(0.2)
 
@@ -209,7 +201,7 @@ class Drivetrain:
             DrivetrainState.LOCKED_TELEOP,
             DrivetrainState.PASSIVE_SNAP_TELEOP,
             DrivetrainState.POINT_AT_REEF,
-            DrivetrainState.RAW_INPUT_TELEOP
+            DrivetrainState.RAW_INPUT_TELEOP,
         ]
 
     def is_lining_up(self) -> bool:
@@ -219,7 +211,10 @@ class Drivetrain:
         Returns:
             bool: whether the bots tate is currently line_up_teleop or line_up_auton
         """
-        return self.state in [DrivetrainState.LINE_UP_TELEOP, DrivetrainState.LINE_UP_AUTON]
+        return self.state in [
+            DrivetrainState.LINE_UP_TELEOP,
+            DrivetrainState.LINE_UP_AUTON,
+        ]
 
     def disable_vision(self) -> None:
         """
@@ -246,20 +241,21 @@ class Drivetrain:
         Params:
             signal (DriveSignal): The target signal
         """
-        if (isinstance(signal, DriveSignal)):
+        if isinstance(signal, DriveSignal):
             self.signal = signal
 
     def update_pose_estimator(self) -> None:
         """
         Updates both pose estimators with drivetrain movements
         """
-        self.pose_estimator.updateWithTime(self.timer.getFPGATimestamp(
-        ), self.get_gyro_yaw_value(), self.get_module_postitions())
+        self.pose_estimator.updateWithTime(
+            self.timer.getFPGATimestamp(),
+            self.get_gyro_yaw_value(),
+            self.get_module_postitions(),
+        )
 
     def drive(
-        self,
-        speeds: wpimath.kinematics.ChassisSpeeds,
-        field_relative: bool = True
+        self, speeds: wpimath.kinematics.ChassisSpeeds, field_relative: bool = True
     ) -> None:
         """
         Sets the desired state for each module based on the givven ChassisSpeeds.
@@ -271,11 +267,11 @@ class Drivetrain:
 
         if field_relative:
             speeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                speeds, self.get_gyro_yaw_value())
+                speeds, self.get_gyro_yaw_value()
+            )
 
         target_states = self.kinematics.desaturateWheelSpeeds(
-            self.kinematics.toSwerveModuleStates(speeds),
-            self.max_speed
+            self.kinematics.toSwerveModuleStates(speeds), self.max_speed
         )
 
         self.front_left.set_desired_state(target_states[0])
@@ -284,8 +280,7 @@ class Drivetrain:
         self.back_right.set_desired_state(target_states[3])
 
         if not wpilib.RobotBase.isReal():
-            self.sim_gyro = Rotation2d(
-                self.sim_gyro.radians() + speeds.omega * 0.02)
+            self.sim_gyro = Rotation2d(self.sim_gyro.radians() + speeds.omega * 0.02)
 
     def enable_active_snap(self, angle: Rotation2d | None) -> None:
         """
@@ -308,13 +303,16 @@ class Drivetrain:
             pose (Pose2d): Position and rotation of the given estimate.
             time_stamp (float): Time of measurement in seconds since the start of the match.
         """
-        if self.is_vision_enabled and abs(pose.translation().norm()) > 1e-6 and self.matchTimer.get() > 0.3:
-            modifier = (self.rot_stdev+abs(self.get_yaw_rate()))/self.rot_stdev
+        if (
+            self.is_vision_enabled
+            and abs(pose.translation().norm()) > 1e-6
+            and self.matchTimer.get() > 0.3
+        ):
+            modifier = (self.rot_stdev + abs(self.get_yaw_rate())) / self.rot_stdev
             self.pose_estimator.setVisionMeasurementStdDevs(
-                (xy_std*modifier, xy_std*modifier, 0.2))
-            self.pose_estimator.addVisionMeasurement(
-                pose, time_stamp
+                (xy_std * modifier, xy_std * modifier, 0.2)
             )
+            self.pose_estimator.addVisionMeasurement(pose, time_stamp)
 
     def manual_drive(self) -> None:
         """
@@ -331,8 +329,9 @@ class Drivetrain:
         Params:
             speed: speed in meters per second to drive forward at
         """
-        self.set_signal(DriveSignal(
-            wpimath.kinematics.ChassisSpeeds(-speed, 0, 0), False))
+        self.set_signal(
+            DriveSignal(wpimath.kinematics.ChassisSpeeds(-speed, 0, 0), False)
+        )
 
     def set_right_signal(self, speed) -> None:
         """
@@ -341,8 +340,7 @@ class Drivetrain:
         Params:
             speed: speed in meters per second to drive rightwards at
         """
-        self.set_signal(DriveSignal(
-            wpimath.kinematics.ChassisSpeeds(0, -speed, 0)))
+        self.set_signal(DriveSignal(wpimath.kinematics.ChassisSpeeds(0, -speed, 0)))
 
     def apply_voltage(self, drive_voltage: float, turn_voltage: float) -> None:
         """
@@ -360,8 +358,8 @@ class Drivetrain:
 
     def feed_voltage(self) -> None:
         """Feeds the drivetrain a certain amount of voltage by resetting feedforwards
-            and giving a forward signal. Only used for tuning feedforwards don't use during
-            comp"""
+        and giving a forward signal. Only used for tuning feedforwards don't use during
+        comp"""
         if not self.reset_ffs:
             self.front_left.reset_feedforward()
             self.front_right.reset_feedforward()
@@ -378,11 +376,12 @@ class Drivetrain:
         Returns:
             tuple[SwerveModulePosition]: All module positions
         """
-        return (self.front_left.get_swerve_position(),
-                self.front_right.get_swerve_position(),
-                self.back_left.get_swerve_position(),
-                self.back_right.get_swerve_position()
-                )
+        return (
+            self.front_left.get_swerve_position(),
+            self.front_right.get_swerve_position(),
+            self.back_left.get_swerve_position(),
+            self.back_right.get_swerve_position(),
+        )
 
     def auton_drive(self) -> None:
         """
@@ -420,7 +419,8 @@ class Drivetrain:
         self.gyro.set_yaw(degrees)
         if not wpilib.RobotBase.isReal():
             self.sim_gyro = Rotation2d.fromDegrees(
-                degrees+180*DriverStation.isTeleop())
+                degrees + 180 * DriverStation.isTeleop()
+            )
 
     def get_state(self):
         """
@@ -474,9 +474,11 @@ class Drivetrain:
         speeds = wpimath.kinematics.ChassisSpeeds(
             self.ax * self.kA + self.vx + self.px,
             self.ay * self.kA + self.vy + self.py,
-            sample.omega + self.kAlpha * sample.alpha +
-            self.heading_controller.calculate(
-                self.get_gyro_yaw_value().radians(), sample.heading)
+            sample.omega
+            + self.kAlpha * sample.alpha
+            + self.heading_controller.calculate(
+                self.get_gyro_yaw_value().radians(), sample.heading
+            ),
         )
 
         # Apply the generated speed
@@ -491,12 +493,12 @@ class Drivetrain:
         """
         self.zero_gyro(loc.rotation().degrees())
         print(self.pose_estimator.getEstimatedPosition())
-        self.pose_estimator.resetPosition(self.get_gyro_yaw_value(),
-                                          self.get_module_postitions(),
-                                          loc)
+        self.pose_estimator.resetPosition(
+            self.get_gyro_yaw_value(), self.get_module_postitions(), loc
+        )
         self.pose_estimator.resetPose(loc)
         print(self.pose_estimator.getEstimatedPosition())
-        print("\n"*10)
+        print("\n" * 10)
 
     @feedback(key="Drivetrain state")
     def get_state_string(self) -> str:
@@ -508,7 +510,6 @@ class Drivetrain:
         """
         return self.state.name
 
-    @feedback(key="Auton Intermediate Pose")
     def get_intermediate_pose(self) -> Pose2d:
         """
         Get the target pose for the current sample in auton
@@ -526,37 +527,11 @@ class Drivetrain:
         Returns:
             Pose2d: Bot's current pose
         """
-        return Pose2d(self.pose_estimator.getEstimatedPosition().translation(), self.pose_estimator.getEstimatedPosition().rotation())
+        return Pose2d(
+            self.pose_estimator.getEstimatedPosition().translation(),
+            self.pose_estimator.getEstimatedPosition().rotation(),
+        )
 
-    @feedback(key="Drivetrain pose x")
-    def get_pose_x(self) -> float:
-        """
-        Gets the x component of the drivetrain's current pose
-
-        Returns:
-            float: the x position in meter of the drivetrain currently
-        """
-        return self.get_pose().X()
-
-    @feedback(key="Drivetrain pose y")
-    def get_pose_y(self) -> float:
-        """
-        Gets the y component of the drivetrain's current pose
-
-        Returns:
-            float: the y position in meter of the drivetrain currently
-        """
-        return self.get_pose().Y()
-
-    @feedback(key="Drivetrain pose rot")
-    def get_pose_rot(self) -> float:
-        """
-        Gets the rotational component of the drivetrain's current pose
-
-        Returns:
-            float: the rotation in degrees of the drivetrain currently
-        """
-        return self.get_pose().rotation().degrees()
 
     @feedback(key="Drivetrain target pose")
     def get_target_pose(self) -> Pose2d:
@@ -571,37 +546,6 @@ class Drivetrain:
             return self.get_pose()
         return self.target_pose
 
-    @feedback(key="Drivetrain target x")
-    def get_target_pose_x(self) -> float:
-        """
-        Gets the x component of the drivetrain's current pose
-
-        Returns:
-            float: the x position in meter of the drivetrain's current target pose
-        """
-        return self.get_target_pose().X()
-
-    @feedback(key="Drivetrain target y")
-    def get_target_pose_y(self) -> float:
-        """
-        Gets the x component of the drivetrain's current pose
-
-        Returns:
-            float: the y position in meter of the drivetrain's current target pose
-        """
-        return self.get_target_pose().Y()
-
-    @feedback(key="Drivetrain target rot")
-    def get_target_pose_rot(self) -> float:
-        """
-        Gets the x component of the drivetrain's target posed
-
-        Returns:
-            float: the rotation in degrees of the drivetrain's current target pose
-        """
-        return self.get_target_pose().rotation().degrees()
-
-    @feedback
     def get_gyro_yaw_value(self) -> Rotation2d:
         """
         Gets the bot's current rotation from the gyro as a Rotation2d
@@ -623,7 +567,6 @@ class Drivetrain:
         """
         return self.get_gyro_yaw_value().degrees()
 
-    @feedback
     def get_yaw_rate(self) -> float:
         """
         Gets the rate at which the bot is turning from the gyro
@@ -633,207 +576,16 @@ class Drivetrain:
         """
         return -self.gyro.get_angular_velocity_z_device().value
 
-    @feedback
-    def get_fl_angle(self) -> float:
-        """
-        Gets the angle of the front left swerve module with offset included
 
-        Returns:
-            float: angle of the front left module clamped to 0-360 degrees
-        """
-        return self.front_left.get_encoder_angle_deg()
-
-    @feedback
-    def get_fr_angle(self) -> float:
-        """
-        Gets the angle of the front right swerve module with offset included
-
-        Returns:
-            float: angle of the front right module clamped to 0-360 degrees
-        """
-        return self.front_right.get_encoder_angle_deg()
-
-    @feedback
-    def get_bl_angle(self) -> float:
-        """
-        Gets the angle of the back left swerve module
-
-        Returns:
-            float: angle of the back left module clamped to 0-360 degrees
-        """
-        return self.back_left.get_encoder_angle_deg()
-
-    @feedback
-    def get_br_angle(self) -> float:
-        """
-        Gets the angle of the back right swerve module
-
-        Returns:
-            float: angle of the back right module clamped to 0-360 degrees
-        """
-        return self.back_right.get_encoder_angle_deg()
-
-    @feedback
-    def get_fl_angle_abs(self) -> float:
-        """
-        Gets the exact reading of the absolute angle encoder on the front left
-        module
-
-        Returns:
-            float: angle of the absolute encoder on the front left module
-        """
-        return self.front_left.get_encoder_angle_deg()
-
-    @feedback
-    def get_fr_angle_abs(self) -> float:
-        """
-        Gets the exact reading of the absolute angle encoder on the front right
-        module
-
-        Returns:
-            float: angle of the absolute encoder on the front right module
-        """
-        return self.front_left.get_encoder_angle_deg()
-
-    @feedback
-    def get_bl_angle_abs(self) -> float:
-        """
-        Gets the exact reading of the absolute angle encoder on the back left
-        module
-
-        Returns:
-            float: angle of the absolute encoder on the back left module
-        """
-        return self.front_left.get_encoder_angle_deg()
-
-    @feedback
-    def get_br_angle_abs(self) -> float:
-        """
-        Gets the exact reading of the absolute angle encoder on the back right
-        module
-
-        Returns:
-            float: angle of the absolute encoder on the back right module
-        """
-        return self.front_left.get_encoder_angle_deg()
-
-    @feedback
-    def get_fl_voltage(self) -> list[float]:
-        """
-        Returns the voltage applied to the front left module
-        Returns:
-            list of floats: a list containing the voltage applied to drive and steer motors
-        """
-        return self.front_left.get_module_voltage()
-
-    @feedback
-    def get_fr_voltage(self) -> list[float]:
-        """
-        Returns the voltage applied to the front right module
-        Returns:
-            list of floats: a list containing the voltage applied to drive and steer motors
-        """
-        return self.front_right.get_module_voltage()
-
-    @feedback
-    def get_bl_voltage(self) -> list[float]:
-        """
-        Returns the voltage applied to the back left module
-        Returns:
-            list of floats: a list containing the voltage applied to drive and steer motors
-        """
-        return self.back_left.get_module_voltage()
-
-    @feedback
-    def get_br_voltage(self) -> list[float]:
-        """
-        Returns the voltage applied to the back right module
-        Returns:
-            list of floats: a list containing the voltage applied to drive and steer motors
-        """
-        return self.back_right.get_module_voltage()
-
-    @feedback
-    def get_fl_velocity(self) -> float:
-        """
-        Gets the velocity of the front left module in meters per second.
-        This is used exclusively for feedforward tuning.
-        Returns:
-            float: velocity of front left module in mps
-        """
-        return self.front_left.get_drive_motor_velocity()
-
-    @feedback
     def is_field_relative(self) -> bool:
         """
         Gets whether the bot is currently field relative
 
-        Returns: 
+        Returns:
             bool: Whether the bot is field relative
         """
         return self.field_relative
 
-    @feedback
-    def get_pid_x(self) -> float:
-        """
-        Returns the value outputted by the x pid controller in auton
-
-        Returns:
-            float: the velocity in meters per second outputted by the x controller during auton
-        """
-        return self.px
-
-    @feedback
-    def get_pid_y(self) -> float:
-        """
-        Returns the value outputted by the y pid controller in auton
-
-        Returns:
-            float: the velocity in meters per second outputted by the y controller during auton
-        """
-        return self.py
-
-    @feedback
-    def get_vx(self) -> float:
-        """
-        Returns the x-velocity of the sample which the drivetrain is following in auton
-
-        Returns:
-            float: the velocity in meters per second of the current choreo sample
-        """
-        return self.vx
-
-    @feedback
-    def get_vy(self) -> float:
-        """
-        Returns the y-velocity of the sample which the drivetrain is following in auton
-
-        Returns:
-            float: the velocity in meters per second of the current choreo sample
-        """
-        return self.vy
-
-    @feedback
-    def get_ax(self) -> float:
-        """
-        Returns the x-acceleration of the sample which the drivetrain is following in auton
-
-        Returns:
-            float: the acceleration in meters per second per second of the current choreo sample
-        """
-        return self.ax
-
-    @feedback
-    def get_ay(self) -> float:
-        """
-        Returns the y-acceleration of the sample which the drivetrain is following in auton
-
-        Returns:
-            float: the acceleration in meters per second per second of the current choreo sample
-        """
-        return self.ay
-
-    @feedback
     def get_velocity(self) -> Pose2d:
         """
         Returns the bot's current inputted velocity
@@ -842,7 +594,11 @@ class Drivetrain:
             Pose2d: A pose containing the xy and rotational velocity in units /s
         """
         if self.signal:
-            return Pose2d(self.signal.get_speed().vx, self.signal.get_speed().vy, self.signal.get_speed().omega)
+            return Pose2d(
+                self.signal.get_speed().vx,
+                self.signal.get_speed().vy,
+                self.signal.get_speed().omega,
+            )
         return Pose2d()
 
     @feedback
@@ -862,14 +618,22 @@ class Drivetrain:
             return False
 
         if self.tighten_tolerances:
-            return utils.within_pose_tolerance(self.get_pose(), self.target_pose, 0.035, 0.2)
+            return utils.within_pose_tolerance(
+                self.get_pose(), self.target_pose, 0.035, 0.2
+            )
 
         if self.state == DrivetrainState.ACTIVE_SNAP_TELEOP:
-            return utils.within_rotation_tolerance(self.snap_angle, self.get_pose().rotation(), 1)
+            return utils.within_rotation_tolerance(
+                self.snap_angle, self.get_pose().rotation(), 1
+            )
 
         if DriverStation.isAutonomous():
-            return utils.within_pose_tolerance(self.target_pose, self.get_pose(), 0.035, 0.75)
-        return utils.within_pose_tolerance(self.target_pose, self.get_pose(), 0.025, 0.75)
+            return utils.within_pose_tolerance(
+                self.target_pose, self.get_pose(), 0.035, 0.75
+            )
+        return utils.within_pose_tolerance(
+            self.target_pose, self.get_pose(), 0.025, 0.75
+        )
 
     def execute(self) -> None:
         """
@@ -878,7 +642,8 @@ class Drivetrain:
 
         self.matchTimer.start()
         self.drivetrain_field.setRobotPose(
-            Pose2d(self.get_pose().X(), self.get_pose().Y(), self.get_pose().rotation()))
+            Pose2d(self.get_pose().X(), self.get_pose().Y(), self.get_pose().rotation())
+        )
 
         # Updates odometry with current drivetrain mov[\]ements
         self.update_pose_estimator()
@@ -890,19 +655,22 @@ class Drivetrain:
                 self.reset_to_net = False
 
         match self.state:
-
             case DrivetrainState.NONE:
                 pass  # print("Warning: drivetrain state is set to \"NONE\"")
 
             case DrivetrainState.LOCKED_TELEOP:
-                self.front_left.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(225)))
-                self.front_right.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(135)))
-                self.back_left.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(315)))
-                self.back_right.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(225)))
+                self.front_left.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(225))
+                )
+                self.front_right.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(135))
+                )
+                self.back_left.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(315))
+                )
+                self.back_right.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(225))
+                )
                 if self.last_translational_input + 0.04 > self.timer.getFPGATimestamp():
                     self.state = DrivetrainState.PASSIVE_SNAP_TELEOP
                     self.snap_angle = self.get_gyro_yaw_value()
@@ -911,12 +679,16 @@ class Drivetrain:
 
             case DrivetrainState.RAW_INPUT_TELEOP:
                 if self.signal:
-                    self.drive(self.signal.get_speed(),
-                               self.signal.get_field_relative())
+                    self.drive(
+                        self.signal.get_speed(), self.signal.get_field_relative()
+                    )
                     if self.last_angular_input + 0.1 < self.timer.getFPGATimestamp():
                         # self.state = DrivetrainState.PASSIVE_SNAP_TELEOP
                         # self.snap_angle = self.get_gyro_yaw_value()
-                        if self.last_translational_input + 1.5 < self.timer.getFPGATimestamp():
+                        if (
+                            self.last_translational_input + 1.5
+                            < self.timer.getFPGATimestamp()
+                        ):
                             pass  # self.state = DrivetrainState.LOCKED_TELEOP
 
             case DrivetrainState.PASSIVE_SNAP_TELEOP:
@@ -924,22 +696,24 @@ class Drivetrain:
                     self.snap_angle = self.get_gyro_yaw_value()
                 if self.last_angular_input + 0.04 > self.timer.getFPGATimestamp():
                     self.state = DrivetrainState.RAW_INPUT_TELEOP
-                elif self.last_translational_input + 1.5 < self.timer.getFPGATimestamp():
+                elif (
+                    self.last_translational_input + 1.5 < self.timer.getFPGATimestamp()
+                ):
                     pass  # self.state = DrivetrainState.LOCKED_TELEOP
                 self.snap_angle_pid.setSetpoint(self.snap_angle.radians())
                 self.signal.get_speed().omega = self.snap_angle_pid.calculate(
-                    self.get_pose().rotation().radians())
+                    self.get_pose().rotation().radians()
+                )
                 if self.signal.get_speed().vx == 0 and self.signal.get_speed().vy == 0:
                     self.signal.get_speed().omega = 0
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
                 if self.last_translational_input + 1.5 < self.timer.getFPGATimestamp():
                     self.state = DrivetrainState.LOCKED_TELEOP
                 self.snap_angle_pid.setSetpoint(self.snap_angle.radians())
                 self.signal.get_speed().omega = self.snap_angle_pid.calculate(
-                    self.get_pose().rotation().radians())
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
+                    self.get_pose().rotation().radians()
+                )
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
 
             case DrivetrainState.ACTIVE_SNAP_TELEOP:
                 if self.manual:
@@ -951,9 +725,9 @@ class Drivetrain:
 
                 self.snap_angle_pid.setSetpoint(self.snap_angle.radians())
                 self.signal.get_speed().omega = self.snap_angle_pid.calculate(
-                    self.get_pose().rotation().radians())
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
+                    self.get_pose().rotation().radians()
+                )
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
 
                 if self.is_aligned() and not self.manual:
                     self.state = DrivetrainState.RAW_INPUT_TELEOP
@@ -962,12 +736,13 @@ class Drivetrain:
                 if self.last_angular_input + 0.04 > self.timer.getFPGATimestamp():
                     self.state = DrivetrainState.RAW_INPUT_TELEOP
                 self.snap_angle = reefscape_functions.angle_to_reef(
-                    self.get_pose().translation())
+                    self.get_pose().translation()
+                )
                 self.fast_snap_pid.setSetpoint(self.snap_angle.radians())
                 self.signal.get_speed().omega = self.fast_snap_pid.calculate(
-                    self.get_gyro_yaw_value().radians())
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
+                    self.get_gyro_yaw_value().radians()
+                )
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
 
             case DrivetrainState.LINE_UP_TELEOP:
                 if self.manual:
@@ -975,11 +750,14 @@ class Drivetrain:
                     self.line_up_controller.setI(self.line_up_i)
                     self.line_up_controller.setD(self.line_up_d)
 
-                difference = self.target_pose.translation(
-                )-self.get_pose().translation()
+                difference = (
+                    self.target_pose.translation() - self.get_pose().translation()
+                )
                 self.line_up_controller.setSetpoint(0)
-                speed = min(MAX_LINE_UP_SPEED,
-                            self.line_up_controller.calculate(-difference.norm()))
+                speed = min(
+                    MAX_LINE_UP_SPEED,
+                    self.line_up_controller.calculate(-difference.norm()),
+                )
                 ratio = speed / difference.norm()
                 vx = ratio * difference.X()
                 vy = ratio * difference.Y()
@@ -988,25 +766,27 @@ class Drivetrain:
                 self.snap_angle_pid.setSetpoint(self.snap_angle.radians())
                 omega = self.snap_angle_pid.calculate(
                     # self.get_gyro_yaw_value().radians())
-                    self.get_pose().rotation().radians())
+                    self.get_pose().rotation().radians()
+                )
 
                 self.set_signal(
-                    DriveSignal(
-                        wpimath.kinematics.ChassisSpeeds(vx, vy, omega), True
-                    ))
+                    DriveSignal(wpimath.kinematics.ChassisSpeeds(vx, vy, omega), True)
+                )
 
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
 
                 if self.is_aligned():
                     self.state = DrivetrainState.ALIGNED
 
             case DrivetrainState.LINE_UP_AUTON:
-                difference = self.target_pose.translation(
-                )-self.get_pose().translation()
+                difference = (
+                    self.target_pose.translation() - self.get_pose().translation()
+                )
                 self.line_up_controller.setSetpoint(0)
-                speed = min(MAX_LINE_UP_SPEED,
-                            self.line_up_controller.calculate(-difference.norm()))
+                speed = min(
+                    MAX_LINE_UP_SPEED,
+                    self.line_up_controller.calculate(-difference.norm()),
+                )
                 ratio = speed / difference.norm()
                 vx = ratio * difference.X()
                 vy = ratio * difference.Y()
@@ -1014,41 +794,42 @@ class Drivetrain:
                 self.snap_angle = self.target_pose.rotation()
                 self.snap_angle_pid.setSetpoint(self.snap_angle.radians())
                 omega = self.snap_angle_pid.calculate(
-                    self.get_gyro_yaw_value().radians())
-
-                self.set_signal(
-                    DriveSignal(
-                        wpimath.kinematics.ChassisSpeeds(vx, vy, omega), True
-                    ))
-
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
-
-            case DrivetrainState.FOLLOW_PATH_AUTON:
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
-
-            case DrivetrainState.ALIGNED:
-                self.front_left.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(225)))
-                self.front_right.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(135)))
-                self.back_left.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(315)))
-                self.back_right.set_desired_state(wpimath.kinematics.SwerveModuleState(
-                    0, Rotation2d.fromDegrees(225)))
-
-            case DrivetrainState.FEED_VOLTAGE:
-                self.set_forward_signal(
-                    self.manual_voltage
+                    self.get_gyro_yaw_value().radians()
                 )
 
-                self.drive(self.signal.get_speed(),
-                           self.signal.get_field_relative())
+                self.set_signal(
+                    DriveSignal(wpimath.kinematics.ChassisSpeeds(vx, vy, omega), True)
+                )
+
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
+
+            case DrivetrainState.FOLLOW_PATH_AUTON:
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
+
+            case DrivetrainState.ALIGNED:
+                self.front_left.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(225))
+                )
+                self.front_right.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(135))
+                )
+                self.back_left.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(315))
+                )
+                self.back_right.set_desired_state(
+                    wpimath.kinematics.SwerveModuleState(0, Rotation2d.fromDegrees(225))
+                )
+
+            case DrivetrainState.FEED_VOLTAGE:
+                self.set_forward_signal(self.manual_voltage)
+
+                self.drive(self.signal.get_speed(), self.signal.get_field_relative())
 
 
-class DriveSignal():
-    def __init__(self, speed: wpimath.kinematics.ChassisSpeeds, field_relative: bool = True):
+class DriveSignal:
+    def __init__(
+        self, speed: wpimath.kinematics.ChassisSpeeds, field_relative: bool = True
+    ):
         """
         Creates a new DriveSignal
 
@@ -1063,7 +844,7 @@ class DriveSignal():
         """
         Gets the speed attribute of the drive signal.
 
-        Returns: 
+        Returns:
             ChassisSpeeds: Current target speeds of the bot.
         """
         if self._speed:
@@ -1082,6 +863,7 @@ class DriveSignal():
 
 class DrivetrainState(Enum):
     """Possible states that the drivetrain can be in during a match"""
+
     NONE = 0  # The drivetrain is doing nothing
     # The drivetrain is locked, making it harder to push around (not used this game)
     LOCKED_TELEOP = 1

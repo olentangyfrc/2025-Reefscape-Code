@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-from ntcore import NetworkTable, NetworkTableEntry, NetworkTableInstance, Value
-from wpimath.geometry import Pose2d, Rotation2d, Translation2d
+from ntcore import NetworkTableInstance, Value
+from wpimath.geometry import Pose2d, Rotation2d
 from wpilib import DriverStation
 
-from math import radians
 import utilities.constants as constants
 
 
@@ -60,7 +59,7 @@ def get_botpose_estimate(botpose: list[float], time: float) -> PoseEstimate:
     tag_span = botpose[8]
     tag_dist = botpose[9]
     tag_area = botpose[10]
-    timestamp = time/1e6 - latency / 1000
+    timestamp = time / 1e6 - latency / 1000
 
     raw_fiducials = []
 
@@ -68,17 +67,20 @@ def get_botpose_estimate(botpose: list[float], time: float) -> PoseEstimate:
         for i in range(tag_count):
             index = 11 + 7 * i
             id = int(botpose[index])
-            txnc = botpose[index+1]
-            tync = botpose[index+2]
-            ta = botpose[index+3]
-            dist_to_camera = botpose[index+4]
-            dist_to_robot = botpose[index+5]
-            ambiguity = botpose[index+6]
+            txnc = botpose[index + 1]
+            tync = botpose[index + 2]
+            ta = botpose[index + 3]
+            dist_to_camera = botpose[index + 4]
+            dist_to_robot = botpose[index + 5]
+            ambiguity = botpose[index + 6]
             raw_fiducials.append(
-                RawFiducial(id, txnc, tync, ta, dist_to_camera,
-                            dist_to_robot, ambiguity)
+                RawFiducial(
+                    id, txnc, tync, ta, dist_to_camera, dist_to_robot, ambiguity
+                )
             )
-    return PoseEstimate(pose, timestamp, latency, tag_count, tag_span, tag_dist, tag_area, raw_fiducials)
+    return PoseEstimate(
+        pose, timestamp, latency, tag_count, tag_span, tag_dist, tag_area, raw_fiducials
+    )
 
 
 def print_PoseEstimate(pose_estimate: PoseEstimate) -> None:
@@ -108,7 +110,7 @@ def print_PoseEstimate(pose_estimate: PoseEstimate) -> None:
     print("Raw Fiducials Details:")
     for i in range(len(pose_estimate.raw_fiducials)):
         fiducial = pose_estimate.raw_fiducials[i]
-        print(f" Fiducial #{i+1}:")
+        print(f" Fiducial #{i + 1}:")
         print(f" ID: {fiducial.id}")
         print(f" TXNC: {fiducial.txyc}")
         print(f" TYNC: {fiducial.tync}")
@@ -129,8 +131,8 @@ def get_std_deviations(estimate: PoseEstimate) -> tuple[float, float]:
     Returns:
         tuple[float, float]: The standard deviations in meters in the xy direction and radians for rotational
     """
-    if estimate.tag_count !=0:
-        xy = 5/((estimate.tag_count*estimate.avg_tag_area)**1.5 * 184.76 + 148.41)
+    if estimate.tag_count != 0:
+        xy = 5 / ((estimate.tag_count * estimate.avg_tag_area) ** 1.5 * 184.76 + 148.41)
         return (xy, 0.2)
     return (10, 10)
 
@@ -146,7 +148,12 @@ def get_queue(limelight_name: str, table_type: str) -> list[Value]:
     Returns:
         list[Value]: A list of recent measurements and their timestamps
     """
-    return NetworkTableInstance.getDefault().getTable(limelight_name).getEntry(table_type).readQueue()
+    return (
+        NetworkTableInstance.getDefault()
+        .getTable(limelight_name)
+        .getEntry(table_type)
+        .readQueue()
+    )
 
 
 def is_on_field(pose: Pose2d) -> bool:
@@ -159,7 +166,12 @@ def is_on_field(pose: Pose2d) -> bool:
     Returns:
         bool: Whether the given pose is on the field
     """
-    return pose.X() + FIELD_TOLERANCE > 0 and pose.X() - FIELD_TOLERANCE < constants.FIELD_LENGTH and pose.Y() + FIELD_TOLERANCE > 0 and pose.Y() - FIELD_TOLERANCE < constants.FIELD_WIDTH
+    return (
+        pose.X() + FIELD_TOLERANCE > 0
+        and pose.X() - FIELD_TOLERANCE < constants.FIELD_LENGTH
+        and pose.Y() + FIELD_TOLERANCE > 0
+        and pose.Y() - FIELD_TOLERANCE < constants.FIELD_WIDTH
+    )
 
 
 def is_non_zero(pose: Pose2d) -> bool:
@@ -175,7 +187,9 @@ def is_non_zero(pose: Pose2d) -> bool:
     return pose.translation().norm() > 1e-7
 
 
-def get_recent_vision_measurements(limelight_name: str, table_type: str) -> list[VisionMeasurement]:
+def get_recent_vision_measurements(
+    limelight_name: str, table_type: str
+) -> list[VisionMeasurement]:
     """
     Gets a list of all vision measurements since the last time this method was called
 
@@ -201,13 +215,14 @@ def get_recent_vision_measurements(limelight_name: str, table_type: str) -> list
             (xy_std, rot_std) = get_std_deviations(pose_estimate)
 
             if is_on_field(pose) and abs(z) < Z_TOLERANCE and is_non_zero(pose):
-                readings.append(VisionMeasurement(
-                    pose, timestamp, xy_std, rot_std))
+                readings.append(VisionMeasurement(pose, timestamp, xy_std, rot_std))
 
     return readings
 
 
-def set_robot_orientation(limelight_name: str, yaw_degrees: float, yaw_rate: float) -> None:
+def set_robot_orientation(
+    limelight_name: str, yaw_degrees: float, yaw_rate: float
+) -> None:
     """
     Sends the current drivetrain yaw to the limelight to help calculate for MegaTag2 estimation
 
@@ -218,7 +233,9 @@ def set_robot_orientation(limelight_name: str, yaw_degrees: float, yaw_rate: flo
     """
     if DriverStation.getAlliance() == DriverStation.Alliance.kBlue:
         NetworkTableInstance.getDefault().getTable(limelight_name).getEntry(
-            "robot_orientation_set").setDoubleArray([yaw_degrees, yaw_rate, 0, 0, 0, 0])
+            "robot_orientation_set"
+        ).setDoubleArray([yaw_degrees, yaw_rate, 0, 0, 0, 0])
     else:
         NetworkTableInstance.getDefault().getTable(limelight_name).getEntry(
-            "robot_orientation_set").setDoubleArray([(yaw_degrees+180) % 360, yaw_rate, 0, 0, 0, 0])
+            "robot_orientation_set"
+        ).setDoubleArray([(yaw_degrees + 180) % 360, yaw_rate, 0, 0, 0, 0])

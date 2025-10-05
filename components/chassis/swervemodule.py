@@ -17,15 +17,13 @@ max_rotation_acceleration = constants.MAX_SINGLE_SWERVE_ROTATION_ACCELERATION
 
 
 class SwerveModule:
-
     def __init__(
         self,
         drive_motor_id: int,
         turning_motor_id: int,
         turning_encoder_id: int,
         offset: float,
-        name: str
-
+        name: str,
     ) -> None:
         """
         Initializes the given swerve module
@@ -45,23 +43,28 @@ class SwerveModule:
         drive_motor_configs.current_limits.stator_current_limit = 50
         drive_motor_configs.future_proof_configs = True
         if name in ["Front Right", "Front Left"]:
-            drive_motor_configs.motor_output.inverted = signals.InvertedValue.CLOCKWISE_POSITIVE
+            drive_motor_configs.motor_output.inverted = (
+                signals.InvertedValue.CLOCKWISE_POSITIVE
+            )
 
         self.drive_motor = hardware.talon_fx.TalonFX(drive_motor_id, "*")
         self.drive_motor.clear_sticky_faults()
         self.drive_motor.configurator.apply(drive_motor_configs)
 
         self.turning_motor_configs = configs.TalonFXConfiguration()
-        self.turning_motor_configs.motor_output.neutral_mode = signals.NeutralModeValue.BRAKE
-        self.turning_motor_configs.motor_output.inverted = signals.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+        self.turning_motor_configs.motor_output.neutral_mode = (
+            signals.NeutralModeValue.BRAKE
+        )
+        self.turning_motor_configs.motor_output.inverted = (
+            signals.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+        )
         self.turning_motor_configs.future_proof_configs = True
 
         self.turning_motor = hardware.TalonFX(turning_motor_id, "*")
         self.turning_motor.clear_sticky_faults()
         self.turning_motor.configurator.apply(self.turning_motor_configs)
 
-        self.turning_encoder = hardware.cancoder.CANcoder(
-            turning_encoder_id, "*")
+        self.turning_encoder = hardware.cancoder.CANcoder(turning_encoder_id, "*")
 
         self.turning_motor.set_control(controls.VoltageOut(0))
 
@@ -69,20 +72,20 @@ class SwerveModule:
 
         # Gains are for example purposes only - must be determined for your own robot!
         self.drive_feed_forward = SimpleMotorFeedforwardMeters(
-            0.23727, 2.59628, 0)  # How fast motor turns wrt how fast it is commanded to drive
+            0.23727, 2.59628, 0
+        )  # How fast motor turns wrt how fast it is commanded to drive
 
         self.turning_PID_controller = ProfiledPIDController(
             constants.TURNING_P,
             constants.TURNING_I,
             constants.TURNING_D,
             wpimath.trajectory.TrapezoidProfile.Constraints(
-                max_rotation_speed,
-                max_rotation_acceleration
-            )
+                max_rotation_speed, max_rotation_acceleration
+            ),
         )
 
         self.turning_PID_controller.enableContinuousInput(-math.pi, math.pi)
-        self.turning_PID_controller.setTolerance(math.pi/180)
+        self.turning_PID_controller.setTolerance(math.pi / 180)
 
         if not RobotBase.isReal():
             self.sim_angle = Rotation2d()
@@ -116,7 +119,9 @@ class SwerveModule:
         if not RobotBase.isReal():
             return self.sim_angle.radians()
         angle = BaseStatusSignal.get_latency_compensated_value(
-            self.turning_encoder.get_absolute_position(), self.turning_encoder.get_velocity())
+            self.turning_encoder.get_absolute_position(),
+            self.turning_encoder.get_velocity(),
+        )
         return angle * math.tau - math.radians(self.offset)
 
     def get_encoder_angle_deg(self) -> float:
@@ -126,8 +131,8 @@ class SwerveModule:
         Returns:
             float: The steering encoder angle in degrees
         """
-        return (self.get_encoder_angle() * 180/math.pi) % 360
-    
+        return (self.get_encoder_angle() * 180 / math.pi) % 360
+
     def get_encoder_angle_abs(self) -> float:
         return (self.turning_encoder.get_absolute_position().value * 360) % 360
 
@@ -138,20 +143,25 @@ class SwerveModule:
         Returns:
             float: Rotational velocity in radians per second
         """
-        return self.drive_motor.get_velocity().value * constants.GEAR_RATIO * \
-            constants.WHEEL_RADIUS * math.tau
+        return (
+            self.drive_motor.get_velocity().value
+            * constants.GEAR_RATIO
+            * constants.WHEEL_RADIUS
+            * math.tau
+        )
 
     def get_drive_motor_position(self) -> float:
         """
         Gets the total translational distance of the drive motor in meters
 
-        Returns: 
+        Returns:
             float: Total distance traveled in meters
         """
         if not RobotBase.isReal():
             return self.sim_position
         position = BaseStatusSignal.get_latency_compensated_value(
-            self.drive_motor.get_position(), self.drive_motor.get_velocity())
+            self.drive_motor.get_position(), self.drive_motor.get_velocity()
+        )
         return position * constants.WHEEL_RADIUS * math.tau * constants.GEAR_RATIO
 
     def reset_drive_motor_position(self) -> None:
@@ -168,8 +178,7 @@ class SwerveModule:
             SwerveModulePosition: the current position and angle of the swerve module
         """
         return SwerveModulePosition(
-            self.get_drive_motor_position(),
-            Rotation2d(self.get_encoder_angle())
+            self.get_drive_motor_position(), Rotation2d(self.get_encoder_angle())
         )
 
     def set_module_voltage(self, drive_voltage: float, turn_voltage: float) -> None:
@@ -193,7 +202,7 @@ class SwerveModule:
         """
         return [
             self.drive_motor.get_motor_voltage().value,
-            self.turning_motor.get_motor_voltage().value
+            self.turning_motor.get_motor_voltage().value,
         ]
 
     def stop_swerve_module(self) -> None:
@@ -201,22 +210,20 @@ class SwerveModule:
         Stops all movement for this swerve module. Only supposed to be used in emergency / urgent situations
         """
         self.set_module_voltage(0, 0)
-        self.set_desired_state(SwerveModuleState(
-            0, Rotation2d(self.get_encoder_angle())))
-        
+        self.set_desired_state(
+            SwerveModuleState(0, Rotation2d(self.get_encoder_angle()))
+        )
+
     def reset_feedforward(self) -> None:
         """
-        Resets the drive feedfoward on module to only 
+        Resets the drive feedfoward on module to only
         having a Kv of 1 (basically voltage = inputted velocity). Only use when tuning feedfowards.
         """
         self.drive_feed_forward.setKs(0)
         self.drive_feed_forward.setKv(1)
         self.drive_feed_forward.setKa(0)
 
-
-    def set_desired_state(
-        self, desired_state: SwerveModuleState
-    ) -> None:
+    def set_desired_state(self, desired_state: SwerveModuleState) -> None:
         """
         Given the desired state, this method runs the calculations and sets the voltages necessary
         to achieve that state.
@@ -225,8 +232,7 @@ class SwerveModule:
             desired_state (SwerveModuleState): The target state for the given swerve module to reach
         """
 
-        encoder_rotation = Rotation2d(
-            self.get_encoder_angle())
+        encoder_rotation = Rotation2d(self.get_encoder_angle())
 
         # Optimize the reference state to avoid spinning further than 90 degrees
         desired_state.optimize(encoder_rotation)
@@ -240,13 +246,12 @@ class SwerveModule:
         drive_output = self.drive_feed_forward.calculate(desired_state.speed)
 
         turn_output = self.turning_PID_controller.calculate(
-            self.get_encoder_angle(),
-            desired_state.angle.radians()
+            self.get_encoder_angle(), desired_state.angle.radians()
         )
 
         self.set_module_voltage(drive_output, turn_output)
 
         if not RobotBase.isReal():
             self.sim_velocity = desired_state.speed
-            self.sim_position += desired_state.speed*0.02
+            self.sim_position += desired_state.speed * 0.02
             self.sim_angle = desired_state.angle

@@ -17,8 +17,7 @@ class Funnel:
         self.left_servo = wpilib.Servo(Funnel.LEFT_PWM_PORT)
         self.right_servo = wpilib.Servo(Funnel.RIGHT_PWM_PORT)
         self.is_climbing = False
-    
-    @feedback
+
     def get_left_position(self) -> float:
         """
         Returns the angle of the left servo
@@ -27,8 +26,7 @@ class Funnel:
             float: a measure of the left servo position in the range 0-1
         """
         return self.left_servo.get()
-    
-    @feedback
+
     def get_right_position(self) -> float:
         """
         Returns the position of the right servo

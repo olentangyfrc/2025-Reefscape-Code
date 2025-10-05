@@ -1,6 +1,6 @@
 """
 This file is taken directly from https://github.com/Gold872/elastic-dashboard and allows for
-easy integration between code and the elastic dashboard. The documentation for elastic 
+easy integration between code and the elastic dashboard. The documentation for elastic
 can be found here https://frc-elastic.gitbook.io/docs
 """
 

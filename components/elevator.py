@@ -12,7 +12,7 @@ from utilities import constants
 
 from wpimath.filter import SlewRateLimiter
 
-RATIO = 43.55/1.5
+RATIO = 43.55 / 1.5
 
 MIN_HEIGHT = 0.0
 MAX_HEIGHT = 1.545
@@ -21,6 +21,7 @@ MAX_VOLTAGE = 10.0
 MAX_VELOCITY = 9999.0
 MAX_ACCELERATION = 9999.0
 
+
 class ElevatorState(Enum):
     """
     Possible heights for the elevator to go to each match
@@ -28,7 +29,7 @@ class ElevatorState(Enum):
 
     STOW = 0.0
     END_EFFECTOR_L1 = 0.18
-    L1 = 0.2 #0.49
+    L1 = 0.2  # 0.49
     L2 = 0.51
     ALGAE_LOW = 0.37
     ALGAE_HIGH = ALGAE_LOW + 0.415
@@ -47,7 +48,7 @@ class ElevatorState(Enum):
 
         Params:
             height (int): the level which the elevator should go to
-        
+
         Returns:
             float: the height which the elevator needs to go to so it can reach the given level
         """
@@ -65,10 +66,9 @@ class ElevatorState(Enum):
 
 
 class Elevator:
-
-    p = tunable(17.0) #16.0
+    p = tunable(17.0)  # 16.0
     i = tunable(0.8)
-    d = tunable(0.0) #0.07
+    d = tunable(0.0)  # 0.07
 
     kg = tunable(0.33)
     ks = tunable(0.11)
@@ -90,7 +90,9 @@ class Elevator:
     def __init__(self):
         """Initializes a continous elevator subsystem"""
         self.sim_height = 0.0
-        self.rate_limiter = SlewRateLimiter(1.6, -1.6, 0) #TODO find a better mechanical accel limit
+        self.rate_limiter = SlewRateLimiter(
+            1.6, -1.6, 0
+        )  # TODO find a better mechanical accel limit
 
         config = configs.TalonFXConfiguration()
         config.motor_output.neutral_mode = signals.NeutralModeValue.BRAKE
@@ -115,7 +117,6 @@ class Elevator:
 
         self.target_height = 0.0
 
-        
         self.voltage_ramp_timer = Timer()
         self.voltage_ramp_timer.reset()
 
@@ -126,7 +127,7 @@ class Elevator:
 
     def setup(self) -> None:
         """
-        This method is called automatically by magicbot after all components and 
+        This method is called automatically by magicbot after all components and
         tunables are created
         """
         self.constraints = TrapezoidProfile.Constraints(self.max_vel, self.max_acc)
@@ -141,7 +142,7 @@ class Elevator:
         Sets a target reef position for the elevator.
 
         Params:
-            height (int): Reef height to go to, with 0 being stowed, and 
+            height (int): Reef height to go to, with 0 being stowed, and
             each reef height represented by a 1, 2, 3, or 4.
         """
         new_height = height.value
@@ -171,15 +172,15 @@ class Elevator:
         """
         if self.pid.getGoal().position != height:
             self.voltage_ramp_timer.restart()
-        
+
         self.pid.setGoal(clamp(height, MIN_HEIGHT, MAX_HEIGHT))
         self.target_height = height
 
     def set_arm_position(self, angle: float) -> None:
         """
-        Sets the arm position to soft stop any crash scenarios. This will not actually 
+        Sets the arm position to soft stop any crash scenarios. This will not actually
         move the arm
-        
+
         Params:
             angle(float): the angle to set the arm to in code
         """
@@ -190,9 +191,10 @@ class Elevator:
         """
         Gets the number of rotations the elevator motors have undergone with zero being the stowed position
         """
-        return (self.left_motor.get_position().value + self.right_motor.get_position().value)/2
-    
-    @feedback(key="Elevator left pos")
+        return (
+            self.left_motor.get_position().value + self.right_motor.get_position().value
+        ) / 2
+
     def get_left_position(self) -> float:
         """
         Returns the number of rotations the left elevator motor has done
@@ -201,8 +203,7 @@ class Elevator:
             float: the number of left elevator motor rotations
         """
         return self.left_motor.get_position().value
-    
-    @feedback(key="Elevator right pos")
+
     def get_right_position(self) -> float:
         """
         Returns the number of rotations the left elevator motor has done
@@ -211,8 +212,7 @@ class Elevator:
             float: the number of left elevator motor rotations
         """
         return self.right_motor.get_position().value
-    
-    @feedback(key="Elevator encoder pos")
+
     def get_encoder_pos(self) -> float:
         """
         Returns the position of the absolute encoder on the elevator
@@ -230,15 +230,14 @@ class Elevator:
         if RobotBase.isReal():
             return self.get_rotations() / RATIO
         return self.sim_height
-    
+
     @feedback(key="Elevator target height")
     def get_target_height(self) -> float:
         """
         Returns the target height of the elevator
         """
         return self.target_height
-    
-    @feedback(key="Elevator goal pos")
+
     def get_goal_position(self) -> float:
         """
         Returns the target position of the elevator profiled pid controller
@@ -247,8 +246,7 @@ class Elevator:
             float: the target position for the profiled pid's goal
         """
         return self.pid.getGoal().position
-    
-    @feedback(key="Elevator goal vel")
+
     def get_goal_velocity(self) -> float:
         """
         Returns the target velocity of the elevator profiled pid controller
@@ -257,8 +255,7 @@ class Elevator:
             float: the target velocity for the profiled pid's goal
         """
         return self.pid.getGoal().velocity
-    
-    @feedback(key="Elevator intermediate pos")
+
     def get_intermediate_position(self) -> float:
         """
         Returns the intermediate position of the elevator profiled pid controller
@@ -267,8 +264,7 @@ class Elevator:
             float: the position for each setpoint of the profiled pid
         """
         return self.pid.getSetpoint().position
-    
-    @feedback(key="Elevator intermediate vel")
+
     def get_intermediate_velocity(self) -> float:
         """
         Returns the intermediate velocity of the elevator profiled pid controller
@@ -276,7 +272,7 @@ class Elevator:
         Returns:
             float: the velocity for each setpoint of the profiled pid
         """
-        return self.pid.getSetpoint().velocity   
+        return self.pid.getSetpoint().velocity
 
     @feedback(key="Elevator at target")
     def at_target(self) -> bool:
@@ -287,37 +283,39 @@ class Elevator:
             bool: if the elevator pid is within tolerance of its goal
         """
         return self.pid.atGoal()
-    
+
     @feedback(key="Elevator error")
     def get_error(self) -> float:
         """
         Returns the error of the elevator from its target
-        
+
         Returns:
-            float: the error calculated by subtracting the height of the elevator from the profiled pid controller's target 
+            float: the error calculated by subtracting the height of the elevator from the profiled pid controller's target
         """
         return self.get_target_height() - self.get_height()
-    
+
     def execute(self):
         """
-        Called every periodic cycle in auton and teleop, 
+        Called every periodic cycle in auton and teleop,
         runs all neccessary logic to operate the elevator
         """
         if not RobotBase.isReal():
             intermediate_height = self.sim_height
             if abs(self.get_error()) > self.pid.getPositionTolerance():
-                intermediate_height += self.get_error()/5
+                intermediate_height += self.get_error() / 5
                 self.sim_height = self.rate_limiter.calculate(intermediate_height)
-                return                 
+                return
 
         if self.zero_elevator:
             self.left_motor.set_position(0)
             self.right_motor.set_position(0)
             self.zero_elevator = False
-        
+
         if self.manual:
             if self.last_a != self.max_acc or self.last_v != self.max_vel:
-                self.constraints = TrapezoidProfile.Constraints(self.max_vel, self.max_acc)
+                self.constraints = TrapezoidProfile.Constraints(
+                    self.max_vel, self.max_acc
+                )
                 self.pid.setConstraints(self.constraints)
 
             self.ff.setKs(self.ks)
@@ -329,10 +327,15 @@ class Elevator:
 
             self.pid.setGoal(clamp(self.target, MIN_HEIGHT, MAX_HEIGHT))
 
-        self.target_voltage = clamp(self.pid.calculate(self.get_height()), -MAX_VOLTAGE, MAX_VOLTAGE) + \
-            self.ff.calculate(self.pid.getGoal().position-self.get_height())
-        self.target_voltage = clamp(self.target_voltage, -self.voltage_ramp_timer.get()*60, self.voltage_ramp_timer.get()*60)
-        
+        self.target_voltage = clamp(
+            self.pid.calculate(self.get_height()), -MAX_VOLTAGE, MAX_VOLTAGE
+        ) + self.ff.calculate(self.pid.getGoal().position - self.get_height())
+        self.target_voltage = clamp(
+            self.target_voltage,
+            -self.voltage_ramp_timer.get() * 60,
+            self.voltage_ramp_timer.get() * 60,
+        )
+
         self.left_motor.set_control(controls.VoltageOut(self.target_voltage))
         self.right_motor.set_control(controls.VoltageOut(self.target_voltage))
 

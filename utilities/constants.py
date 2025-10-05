@@ -1,6 +1,5 @@
 import math
-from wpimath.geometry import Pose2d, Rotation2d, Translation2d, Transform2d
-from dataclasses import dataclass
+from wpimath.geometry import Pose2d, Rotation2d, Transform2d
 from wpilib import RobotBase
 
 from enum import Enum
@@ -22,28 +21,25 @@ L1_STACK_SHIFT = 0.44  # Hypotenuse of shift from reef
 TRANSFORM_LEFT = Transform2d(-LINE_UP_DISTANCE, LATERAL_REEF_OFFSET, 0)
 TRANSFORM_RIGHT = Transform2d(-LINE_UP_DISTANCE, -LATERAL_REEF_OFFSET, 0)
 
-L1_ARM_TRANSFORM_LEFT = Transform2d(-L1_LINE_UP_DISTANCE,
-                                    LATERAL_REEF_OFFSET + 0.03, 0)
-L1_ARM_TRANSFORM_RIGHT = Transform2d(-L1_LINE_UP_DISTANCE, -
-                                     LATERAL_REEF_OFFSET - 0.03, 0)
+L1_ARM_TRANSFORM_LEFT = Transform2d(-L1_LINE_UP_DISTANCE, LATERAL_REEF_OFFSET + 0.03, 0)
+L1_ARM_TRANSFORM_RIGHT = Transform2d(
+    -L1_LINE_UP_DISTANCE, -LATERAL_REEF_OFFSET - 0.03, 0
+)
 
-L1_END_EFFECTOR_TRANSFORM_LEFT = Transform2d(
-    -0.44, 0.38, 0
-)
-L1_END_EFFECTOR_TRANSFORM_RIGHT = Transform2d(
-    -0.44, -0.38, 0
-)
+L1_END_EFFECTOR_TRANSFORM_LEFT = Transform2d(-0.44, 0.38, 0)
+L1_END_EFFECTOR_TRANSFORM_RIGHT = Transform2d(-0.44, -0.38, 0)
 
 PROCESSOR_POSE = Pose2d(6, 0.81, Rotation2d.fromDegrees(-90))
 
 
 class Robot_State(Enum):
-    """ 
+    """
     Enum representing the different states a robot can be in during operation.
 
     Each state corresponds to a specific phase or task the robot is performing
     each match.
     """
+
     DRIVE = 1  # The robot is driving
     MANUAL_OVERRIDE = 2  # The driver pressed the cancel commands button
     STATION_INTAKE = 3  # The robot is intaking from the coral station
@@ -62,6 +58,7 @@ class Robot_State(Enum):
 
 class AT_Coordinates(Enum):
     """The april tag poses for each reef pairing (ex. AB)"""
+
     AB = Pose2d(3.6576, 4.0208, math.radians(0))
     CD = Pose2d(4.0739, 3.3012, math.radians(60))
     EF = Pose2d(4.9047, 3.3012, math.radians(120))
@@ -72,6 +69,7 @@ class AT_Coordinates(Enum):
 
 class Reef_Position(Enum):
     """The poses used to line up at each reef for scoring L2-L4"""
+
     A = AT_Coordinates.AB.value.transformBy(TRANSFORM_LEFT)
     B = AT_Coordinates.AB.value.transformBy(TRANSFORM_RIGHT)
     C = AT_Coordinates.CD.value.transformBy(TRANSFORM_LEFT)
@@ -91,7 +89,7 @@ class Reef_Position(Enum):
     @staticmethod
     def from_string(reef_position: str) -> Pose2d:
         """
-        Returns a reef position given a certain letter ex. returns the lineup position 
+        Returns a reef position given a certain letter ex. returns the lineup position
         of reef a if inputted "a"
 
         Params:
@@ -174,8 +172,9 @@ class Auton_Actions(Enum):
     """
     Possible actions that can be done on each route in an autonomous routine
 
-    Routes only support having one auton action per each 
+    Routes only support having one auton action per each
     """
+
     INTAKE_CORAL = 0  # Robot is intaking coral from the coral station
     PROCCESOR_SCORE = 1  # Robot is scoring algae in the processor
     REEF_SCORE = 2  # Robot is scoring L4 coral on the reef
@@ -197,7 +196,7 @@ def generate_L1_stack_poses(center: AT_Coordinates, pts: int) -> list[Pose2d]:
 
     r_list = []
     center_pose = center.value
-    step = REEF_LENGTH/(pts - 1)
+    step = REEF_LENGTH / (pts - 1)
 
     cos_val = math.cos(-center_pose.rotation().radians())
     sin_val = math.sin(-center_pose.rotation().radians())
@@ -206,12 +205,11 @@ def generate_L1_stack_poses(center: AT_Coordinates, pts: int) -> list[Pose2d]:
     y_shift = sin_val * L1_STACK_SHIFT
 
     for i in range(pts):
-        offset = i - (pts-1)/2
+        offset = i - (pts - 1) / 2
         dx = offset * (step) * sin_val - x_shift
         dy = offset * (step) * cos_val + y_shift
         r_list.append(
-            Pose2d(center_pose.X() + dx, center_pose.Y() +
-                   dy, center_pose.rotation())
+            Pose2d(center_pose.X() + dx, center_pose.Y() + dy, center_pose.rotation())
         )
 
     return r_list
@@ -246,13 +244,13 @@ MAX_LINEAR_ACCELERATION = 4
 # Meters per second squared
 
 MAX_ROTATION_SPEED = 7  # radians per sec
-MAX_ROTATION_ACCELERATION = 1/2  # Radians per second squared
+MAX_ROTATION_ACCELERATION = 1 / 2  # Radians per second squared
 
 MAX_SINGLE_SWERVE_ROTATION_SPEED = 9999  # degrees per sec
 MAX_SINGLE_SWERVE_ROTATION_ACCELERATION = 9999  # degrees per second squared
 
 # Robot Measurements
-WHEEL_RADIUS = 0.08592/2  # meters
+WHEEL_RADIUS = 0.08592 / 2  # meters
 # Center of wheel to center of wheel across the side of the bot in meters
 WHEEL_BASE = 0.584
 # Center of wheel to center of wheel across the front of the bot in meters

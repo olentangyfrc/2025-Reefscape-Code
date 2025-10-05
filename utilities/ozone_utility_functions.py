@@ -2,7 +2,6 @@ import math
 
 import wpimath
 from wpimath.geometry import Translation2d, Rotation2d, Pose2d
-from wpilib import DriverStation, RobotBase
 
 import utilities.constants as constants
 
@@ -32,7 +31,7 @@ def convert_rpm_to_mps(RPM: float) -> float:
     Returns:
         float: Speed in meters per second.
     """
-    return (RPM/60)*(2*math.pi*constants.WHEEL_RADIUS)
+    return (RPM / 60) * (2 * math.pi * constants.WHEEL_RADIUS)
 
 
 def convert_ticks_to_degrees(tick_count: int) -> float:
@@ -56,7 +55,7 @@ def convert_ticks_to_radians(tick_count: int) -> float:
     """
     Converts encoder tick count to radians.
 
-    The function calculates the corresponding angle in radians based on the 
+    The function calculates the corresponding angle in radians based on the
     given tick count. The negative sign is applied to correct the rotation direction.
 
     Args:
@@ -72,8 +71,8 @@ def filter_input(controller_input: float, apply_deadband: bool = True) -> float:
     """
     Filters the controller input by applying a squared scaling and an optional deadband.
 
-    This function squares the input while preserving its sign to provide finer control 
-    at lower values. If `apply_deadband` is True, it applies a deadband to ignore small 
+    This function squares the input while preserving its sign to provide finer control
+    at lower values. If `apply_deadband` is True, it applies a deadband to ignore small
     inputs that may result from controller drift.
 
     Args:
@@ -84,7 +83,8 @@ def filter_input(controller_input: float, apply_deadband: bool = True) -> float:
         float: The filtered controller input.
     """
     controller_input_corrected = math.copysign(
-        math.pow(controller_input, 2), controller_input)
+        math.pow(controller_input, 2), controller_input
+    )
 
     if apply_deadband:
         return wpimath.applyDeadband(controller_input_corrected, constants.DEADBAND)
@@ -118,7 +118,11 @@ def red_to_blue(position: Translation2d) -> Translation2d:
     Returns:
         Translation2d: The equivalent position relative to the blue alliance.
     """
-    return Translation2d(-position.X()+constants.FIELD_LENGTH/2, -position.Y()+constants.FIELD_WIDTH/2)
+    return Translation2d(
+        -position.X() + constants.FIELD_LENGTH / 2,
+        -position.Y() + constants.FIELD_WIDTH / 2,
+    )
+
 
 def swap_pose(pose: Pose2d) -> Pose2d:
     """
@@ -146,11 +150,13 @@ def RPM_to_RadiansPerSecond(RPM: float) -> float:
     return (RPM / 60) * (2 * math.pi)
 
 
-def within_pose_tolerance(p1: Pose2d, p2: Pose2d, translation_tol: float, rotation_tol: float) -> bool:
+def within_pose_tolerance(
+    p1: Pose2d, p2: Pose2d, translation_tol: float, rotation_tol: float
+) -> bool:
     """
     Checks whether two poses are within a given translation and rotation tolerance.
 
-    This function determines if the translation and rotation differences between 
+    This function determines if the translation and rotation differences between
     two poses are within the specified tolerances.
 
     Args:
@@ -163,12 +169,15 @@ def within_pose_tolerance(p1: Pose2d, p2: Pose2d, translation_tol: float, rotati
         bool: True if both translation and rotation differences are within tolerance, False otherwise.
     """
     t = within_translation_tolerance(
-        p1.translation(), p2.translation(), translation_tol)
+        p1.translation(), p2.translation(), translation_tol
+    )
     r = within_rotation_tolerance(p1.rotation(), p2.rotation(), rotation_tol)
     return t and r
 
 
-def within_translation_tolerance(t1: Translation2d, t2: Translation2d, tolerance: float):
+def within_translation_tolerance(
+    t1: Translation2d, t2: Translation2d, tolerance: float
+):
     """
     Checks whether two translations are within a given tolerance.
 

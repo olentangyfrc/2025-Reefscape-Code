@@ -1,31 +1,25 @@
 import math
 
 from ntcore import NetworkTableInstance, NetworkTable
-from wpilib import Timer, Field2d, SmartDashboard, DriverStation
+from wpilib import Timer, Field2d, DriverStation
 from components.chassis import drivetrain
-from wpimath.geometry import Pose2d, Rotation2d
+from wpimath.geometry import Pose2d
 
 from wpilib.shuffleboard import Shuffleboard
-from utilities import constants
 
 from magicbot import feedback, tunable
 
 from utilities.vision_utils import (
-    print_PoseEstimate,
     get_recent_vision_measurements,
     set_robot_orientation,
-    VisionMeasurement
+    VisionMeasurement,
 )
 
 
-CAMERA_NAMES = [
-    "limelight-left",
-    "limelight-right"
-]
+CAMERA_NAMES = ["limelight-left", "limelight-right"]
 
 
 class Vision:
-
     instance = None
 
     left_enable = tunable(True)
@@ -38,14 +32,16 @@ class Vision:
         """
         Vision.instance = self
 
-        self.cameraName = 'limelight'
+        self.cameraName = "limelight"
         instance = NetworkTableInstance.getDefault()
 
         self.tables: list[NetworkTable] = [
-            instance.getTable(name) for name in CAMERA_NAMES]
+            instance.getTable(name) for name in CAMERA_NAMES
+        ]
 
         self.measurement_tracker: dict[str, list[VisionMeasurement]] = {
-            name: [] for name in CAMERA_NAMES}
+            name: [] for name in CAMERA_NAMES
+        }
 
         self.vision_field = Field2d()
         self.vision_field.setRobotPose(Pose2d())
@@ -60,7 +56,6 @@ class Vision:
         """
 
         for camera_name in CAMERA_NAMES:
-
             if not self.left_enable and camera_name == "limelight-left":
                 continue
             if not self.right_enable and camera_name == "limelight-right":
@@ -71,20 +66,29 @@ class Vision:
                 nt_id = "botpose_orb_wpired"
 
             set_robot_orientation(
-                camera_name, drivetrain.Drivetrain.instance.get_gyro_yaw_value().degrees(), drivetrain.Drivetrain.instance.get_yaw_rate()*self.send_yaw_rate)
-            recent_measurements = get_recent_vision_measurements(
-                camera_name, nt_id)
+                camera_name,
+                drivetrain.Drivetrain.instance.get_gyro_yaw_value().degrees(),
+                drivetrain.Drivetrain.instance.get_yaw_rate() * self.send_yaw_rate,
+            )
+            recent_measurements = get_recent_vision_measurements(camera_name, nt_id)
             for measurement in recent_measurements:
                 self.measurement_tracker[camera_name].append(measurement)
                 drivetrain.Drivetrain.instance.add_vision_measurement(
-                    measurement.pose, measurement.timestamp, measurement.xy_std)
-                self.vision_field.setRobotPose(Pose2d(measurement.pose.X(), measurement.pose.Y(), measurement.pose.rotation()))
+                    measurement.pose, measurement.timestamp, measurement.xy_std
+                )
+                self.vision_field.setRobotPose(
+                    Pose2d(
+                        measurement.pose.X(),
+                        measurement.pose.Y(),
+                        measurement.pose.rotation(),
+                    )
+                )
 
             for i in self.measurement_tracker[camera_name]:
                 if i.timestamp + 1.0 < Timer.getFPGATimestamp():
                     self.measurement_tracker[camera_name].pop(
-                        self.measurement_tracker[camera_name].index(i))
-                    
+                        self.measurement_tracker[camera_name].index(i)
+                    )
 
     def recent_pose(self, limelight_name: str) -> Pose2d:
         """
@@ -96,7 +100,10 @@ class Vision:
         Returns:
             Pose2d: The most recent measured pose from the given limelight
         """
-        if limelight_name in self.measurement_tracker.keys() and len(self.measurement_tracker[limelight_name]) != 0:
+        if (
+            limelight_name in self.measurement_tracker.keys()
+            and len(self.measurement_tracker[limelight_name]) != 0
+        ):
             return self.measurement_tracker[limelight_name][-1].pose
         return Pose2d()
 
@@ -110,14 +117,17 @@ class Vision:
         Returns:
             int: The number of frames measured from in the last second
         """
-        if limelight_name in self.measurement_tracker.keys() and len(self.measurement_tracker[limelight_name]) != 0:
+        if (
+            limelight_name in self.measurement_tracker.keys()
+            and len(self.measurement_tracker[limelight_name]) != 0
+        ):
             return len(self.measurement_tracker[limelight_name])
         return 0
-    
+
     @feedback
     def get_left_pose(self) -> Pose2d:
         return self.recent_pose("limelight-left")
-    
+
     @feedback
     def get_right_pose(self) -> Pose2d:
         return self.recent_pose("limelight-right")
@@ -154,8 +164,7 @@ class Vision:
         avg_rot = math.atan2(sin_sum / num_cameras, cos_sum / num_cameras)
 
         return Pose2d(avg_x, avg_y, avg_rot)
-    
-    @feedback
+
     def get_avg_pose_x(self) -> float:
         """
         Returns the x component of the average pose determined by vision
@@ -164,8 +173,7 @@ class Vision:
             float: the average x in meters that the bot's vision returns
         """
         return self.get_avg_pose().X()
-    
-    @feedback
+
     def get_avg_pose_y(self) -> float:
         """
         Returns the y component of the average pose determined by vision
@@ -174,7 +182,7 @@ class Vision:
             float: the average y in meters that the bot's vision returns
         """
         return self.get_avg_pose().Y()
-    
+
     @feedback
     def get_avg_pose_rot(self) -> float:
         """
@@ -184,8 +192,7 @@ class Vision:
             float: the average rotations in degrees that the bot's vision returns
         """
         return self.get_avg_pose().rotation().degrees()
-    
-    @feedback
+
     def get_avg_fps(self) -> float:
         """
         Returns the average frames per second of all cameras on the bot
