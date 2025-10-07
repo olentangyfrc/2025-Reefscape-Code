@@ -173,6 +173,7 @@ Our `utilities` folder contains 6 files for general purposes throughout the code
 ##### Programming Mentors:
 - **Jason Zutterling**: JasonZutterling
 - **Jeff Brusoe**: jbfrc
+- **Tyler Sprau**: tspizzy
 ---
 
 ### 🧡 Thank You To Our Sponsors!
