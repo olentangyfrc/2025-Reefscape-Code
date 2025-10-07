@@ -172,7 +172,7 @@ Our `utilities` folder contains 6 files for general purposes throughout the code
 - **Varun Nandakumar**: Varun N
 - **Vivaan Singh**: vivaannotvivian
 - **Wafee Qazi**: WafeeQazi
-- **Zehra Demirtoka** zherapnda
+- **Zehra Demirtoka**: zherapnda
 
 ##### Programming Mentors:
 - **Jason Zutterling**: JasonZutterling
