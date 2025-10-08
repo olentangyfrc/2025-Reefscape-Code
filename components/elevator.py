@@ -186,7 +186,6 @@ class Elevator:
         """
         self.arm_angle = angle
 
-    @feedback(key="Elevator rots")
     def get_rotations(self) -> float:
         """
         Gets the number of rotations the elevator motors have undergone with zero being the stowed position
@@ -222,7 +221,6 @@ class Elevator:
         """
         return self.encoder.get()
 
-    @feedback(key="Elevator height")
     def get_height(self) -> float:
         """
         Gets the height of the carriage from its stowed position
@@ -231,7 +229,6 @@ class Elevator:
             return self.get_rotations() / RATIO
         return self.sim_height
 
-    @feedback(key="Elevator target height")
     def get_target_height(self) -> float:
         """
         Returns the target height of the elevator
@@ -274,7 +271,7 @@ class Elevator:
         """
         return self.pid.getSetpoint().velocity
 
-    @feedback(key="Elevator at target")
+
     def at_target(self) -> bool:
         """
         Returns whether or not the elevator is at its target position
@@ -284,7 +281,6 @@ class Elevator:
         """
         return self.pid.atGoal()
 
-    @feedback(key="Elevator error")
     def get_error(self) -> float:
         """
         Returns the error of the elevator from its target

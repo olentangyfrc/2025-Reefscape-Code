@@ -124,15 +124,12 @@ class Vision:
             return len(self.measurement_tracker[limelight_name])
         return 0
 
-    @feedback
     def get_left_pose(self) -> Pose2d:
         return self.recent_pose("limelight-left")
 
-    @feedback
     def get_right_pose(self) -> Pose2d:
         return self.recent_pose("limelight-right")
 
-    @feedback
     def get_avg_pose(self) -> Pose2d:
         """
         Gets the average pose reading for all cameras on the bot
@@ -183,7 +180,6 @@ class Vision:
         """
         return self.get_avg_pose().Y()
 
-    @feedback
     def get_avg_pose_rot(self) -> float:
         """
         Returns the y component of the average pose determined by vision

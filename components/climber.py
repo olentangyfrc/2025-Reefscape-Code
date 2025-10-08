@@ -54,7 +54,7 @@ class Climber:
         """
         return self.climb_motor.get_position().value
 
-    @feedback(key="Climber beam break")
+
     def get_beam_break(self) -> bool:
         """
         Returns whether or not the beam break is currently broken

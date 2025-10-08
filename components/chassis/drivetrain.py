@@ -500,7 +500,6 @@ class Drivetrain:
         print(self.pose_estimator.getEstimatedPosition())
         print("\n" * 10)
 
-    @feedback(key="Drivetrain state")
     def get_state_string(self) -> str:
         """
         Gets the current state of the drivetrain as a string.
@@ -519,7 +518,6 @@ class Drivetrain:
         """
         return self.intermediate_pose
 
-    @feedback(key="Drivetrain pose")
     def get_pose(self) -> Pose2d:
         """
         Gets a pose that is noisier but more accurate for fine drivetrain control.
@@ -533,7 +531,6 @@ class Drivetrain:
         )
 
 
-    @feedback(key="Drivetrain target pose")
     def get_target_pose(self) -> Pose2d:
         """
         Gets the bot's current target pose it is trying to line up to, if no pose is given
@@ -557,7 +554,6 @@ class Drivetrain:
             return self.sim_gyro
         return Rotation2d(math.radians(self.gyro.get_yaw().value))
 
-    @feedback
     def get_gyro_yaw_degrees(self) -> float:
         """
         Get the bot's rotation from the gyro in degrees
@@ -601,7 +597,6 @@ class Drivetrain:
             )
         return Pose2d()
 
-    @feedback
     def is_aligned(self) -> bool:
         """
         Returns whether the robot is within a small tolerance of the target pose. If no target pose is given

@@ -152,7 +152,6 @@ class Arm:
     def get_detected(self) -> bool:
         return self.can_range.get_is_detected().value
 
-    @feedback(key="Arm State")
     def get_state_string(self) -> str:
         """
         Returns the state that the arm is in
@@ -183,7 +182,6 @@ class Arm:
             self.intake_roller_motor.get_stator_current().value
         )
 
-    @feedback(key="Arm absolute pos")
     def get_abs_encoder(self) -> float:
         """
         Returns position of absolute encoder
@@ -206,7 +204,6 @@ class Arm:
             )
         return self.target_angle
 
-    @feedback(key="Arm pivot pos deg")
     def get_pivot_position_deg(self) -> float:
         """Returns position of the arm in degrees"""
         return math.degrees(self.get_pivot_position())
@@ -215,12 +212,10 @@ class Arm:
         """Returns velocity of arm in radians per second"""
         return self.intake_angle_motor.get_velocity().value * self.GEAR_RATIO * math.tau
 
-    @feedback(key="At target")
     def is_at_target(self) -> bool:
         """Returns whether if the arm is at its target position"""
         return self.intake_angle_pid.atSetpoint()
 
-    @feedback(key="holding")
     def is_holding(self) -> bool:
         """Returns whether the arm is holding an algae"""
         return self.holding_algae
